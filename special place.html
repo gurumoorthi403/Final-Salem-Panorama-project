@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Places & Attractions in Salem</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f8f9fa; }
+        header { background: linear-gradient(135deg, #00a86b 0%, #00c878 100%); color: white; padding: 1.5rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header-content { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .site-title { font-size: 2rem; margin-bottom: 0.5rem; }
+        .site-tagline { font-size: 0.95rem; opacity: 0.9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 20px; }
+        .intro-section { background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        .intro-section h1 { color: #00a86b; font-size: 2rem; margin-bottom: 1rem; }
+        .intro-section p { color: #555; font-size: 1.05rem; line-height: 1.8; }
+        .map-section { background: white; border-radius: 12px; padding: 2rem; margin-bottom: 2.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .map-section h2 { color: #00a86b; margin-bottom: 1rem; font-size: 1.5rem; }
+        .map-container { width: 100%; height: 500px; border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
+        #placesMapView { width: 100%; height: 100%; }
+        .map-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #00a86b; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .filter-section { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+        .filter-btn { padding: 0.7rem 1.2rem; border: 2px solid #00a86b; background: white; color: #00a86b; border-radius: 25px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .filter-btn.active { background: #00a86b; color: white; }
+        .filter-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 168, 107, 0.3); }
+        .places-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .place-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.3s; border-top: 5px solid #00a86b; cursor: pointer; }
+        .place-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+        .place-card.shopping { border-top-color: #ff6b9d; }
+        .place-card.nature { border-top-color: #4ecdc4; }
+        .place-card.attraction { border-top-color: #ffa502; }
+        .place-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .place-category { display: inline-block; background: #e8f5f0; color: #00a86b; padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 1rem; }
+        .place-category.shopping { background: #ffe8ef; color: #ff6b9d; }
+        .place-category.nature { background: #e0f7f5; color: #4ecdc4; }
+        .place-category.attraction { background: #fff3e0; color: #ffa502; }
+        .place-name { color: #00a86b; font-size: 1.3rem; font-weight: 600; margin-bottom: 0.8rem; }
+        .place-card.shopping .place-name { color: #ff6b9d; }
+        .place-card.nature .place-name { color: #4ecdc4; }
+        .place-card.attraction .place-name { color: #ffa502; }
+        .place-description { color: #666; line-height: 1.8; margin-bottom: 1rem; font-size: 0.95rem; }
+        .place-specialty { background: #f8f9fa; padding: 1rem; border-left: 3px solid #00a86b; border-radius: 5px; margin-bottom: 1rem; }
+        .place-card.shopping .place-specialty { border-left-color: #ff6b9d; }
+        .place-card.nature .place-specialty { border-left-color: #4ecdc4; }
+        .place-card.attraction .place-specialty { border-left-color: #ffa502; }
+        .specialty-label { color: #00a86b; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.9rem; }
+        .place-card.shopping .specialty-label { color: #ff6b9d; }
+        .place-card.nature .specialty-label { color: #4ecdc4; }
+        .place-card.attraction .specialty-label { color: #ffa502; }
+        .specialty-value { color: #555; font-size: 0.9rem; }
+        .view-btn { display: inline-block; background: #00a86b; color: white; padding: 0.7rem 1.5rem; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s; border: none; cursor: pointer; width: 100%; text-align: center; }
+        .place-card.shopping .view-btn { background: #ff6b9d; }
+        .place-card.nature .view-btn { background: #4ecdc4; }
+        .place-card.attraction .view-btn { background: #ffa502; }
+        .view-btn:hover { transform: scale(1.02); opacity: 0.9; }
+        .view-toggle { display: flex; gap: 1rem; margin-bottom: 2rem; justify-content: center; }
+        .toggle-btn { padding: 0.7rem 1.5rem; border: 2px solid #00a86b; background: white; color: #00a86b; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .toggle-btn.active { background: #00a86b; color: white; }
+        .places-list { display: none; }
+        .place-item { background: white; padding: 2rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid #00a86b; }
+        .place-item.shopping { border-left-color: #ff6b9d; }
+        .place-item.nature { border-left-color: #4ecdc4; }
+        .place-item.attraction { border-left-color: #ffa502; }
+        .place-item h3 { color: #00a86b; font-size: 1.3rem; margin-bottom: 1rem; }
+        .place-item.shopping h3 { color: #ff6b9d; }
+        .place-item.nature h3 { color: #4ecdc4; }
+        .place-item.attraction h3 { color: #ffa502; }
+        .place-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1rem; }
+        .detail-box { padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #00a86b; }
+        .place-item.shopping .detail-box { border-left-color: #ff6b9d; }
+        .place-item.nature .detail-box { border-left-color: #4ecdc4; }
+        .place-item.attraction .detail-box { border-left-color: #ffa502; }
+        .detail-label { color: #00a86b; font-weight: 600; margin-bottom: 0.5rem; }
+        .place-item.shopping .detail-label { color: #ff6b9d; }
+        .place-item.nature .detail-label { color: #4ecdc4; }
+        .place-item.attraction .detail-label { color: #ffa502; }
+        .detail-value { color: #333; font-size: 1rem; line-height: 1.6; }
+        .category-section { margin-bottom: 3rem; }
+        .category-title { color: #00a86b; font-size: 1.8rem; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 3px solid #00a86b; display: flex; align-items: center; gap: 1rem; }
+        .category-title.shopping { color: #ff6b9d; border-bottom-color: #ff6b9d; }
+        .category-title.nature { color: #4ecdc4; border-bottom-color: #4ecdc4; }
+        .category-title.attraction { color: #ffa502; border-bottom-color: #ffa502; }
+        .category-icon { font-size: 2rem; }
+        .footer-info { background: linear-gradient(135deg, rgba(0, 168, 107, 0.1) 0%, rgba(0, 200, 120, 0.1) 100%); padding: 2rem; border-radius: 12px; text-align: center; margin-top: 3rem; }
+        .footer-info h3 { color: #00a86b; margin-bottom: 1rem; }
+        .back-btn { display: inline-block; background: #00a86b; color: white; padding: 0.7rem 1.5rem; border-radius: 5px; text-decoration: none; font-weight: 600; transition: all 0.3s; margin-bottom: 2rem; }
+        .back-btn:hover { background: #00c878; }
+        @media (max-width: 768px) {
+            .places-grid { grid-template-columns: 1fr; }
+            .site-title { font-size: 1.5rem; }
+            .map-container { height: 350px; }
+            .place-details { grid-template-columns: 1fr; }
+            .category-title { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1 class="site-title">🌟 Special Places & Attractions in Salem</h1>
+            <p class="site-tagline">Shopping Malls, Parks, Nature Spots & Tourist Attractions - Complete Guide</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <a href="index.html" class="back-btn">← Back to Home</a>
+        <div class="intro-section">
+            <h1>Explore Salem's Best Destinations</h1>
+            <p>Salem offers a diverse range of attractions from modern shopping malls to natural wonders and scenic viewpoints. Whether you're looking for shopping, outdoor activities, or family entertainment, discover all the special places that make Salem unique.</p>
+        </div>
+
+        <div class="map-section">
+            <h2>🗺️ Places & Attractions Map of Salem</h2>
+            <div class="map-container"><div id="placesMapView"></div></div>
+            <div class="map-legend">
+                <div class="legend-item"><div class="legend-dot" style="background: #ff6b9d;"></div><span>Shopping Malls & Bazaars</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background: #4ecdc4;"></div><span>Parks & Nature Spots</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background: #ffa502;"></div><span>Tourist Attractions</span></div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterPlaces('all')">📍 Show All</button>
+            <button class="filter-btn" onclick="filterPlaces('shopping')">🛍️ Shopping</button>
+            <button class="filter-btn" onclick="filterPlaces('nature')">🌳 Nature & Parks</button>
+            <button class="filter-btn" onclick="filterPlaces('attraction')">🎢 Attractions</button>
+        </div>
+
+        <div class="view-toggle">
+            <button class="toggle-btn active" onclick="switchView('grid')">📑 Grid View</button>
+            <button class="toggle-btn" onclick="switchView('list')">📋 List View</button>
+        </div>
+
+        <div id="gridView">
+            <div class="category-section" id="shopping-section">
+                <h2 class="category-title shopping"><span class="category-icon">🛍️</span> Shopping Malls & Bazaars</h2>
+                <div class="places-grid" id="shoppingGrid"></div>
+            </div>
+            <div class="category-section" id="nature-section">
+                <h2 class="category-title nature"><span class="category-icon">🌳</span> Parks & Nature Spots</h2>
+                <div class="places-grid" id="natureGrid"></div>
+            </div>
+            <div class="category-section" id="attraction-section">
+                <h2 class="category-title attraction"><span class="category-icon">🎢</span> Tourist Attractions & Hill Spots</h2>
+                <div class="places-grid" id="attractionGrid"></div>
+            </div>
+        </div>
+
+        <div id="listView" class="places-list">
+            <div class="category-section" id="shopping-section-list">
+                <h2 class="category-title shopping"><span class="category-icon">🛍️</span> Shopping Malls & Bazaars</h2>
+                <div id="shoppingList"></div>
+            </div>
+            <div class="category-section" id="nature-section-list">
+                <h2 class="category-title nature"><span class="category-icon">🌳</span> Parks & Nature Spots</h2>
+                <div id="natureList"></div>
+            </div>
+            <div class="category-section" id="attraction-section-list">
+                <h2 class="category-title attraction"><span class="category-icon">🎢</span> Tourist Attractions & Hill Spots</h2>
+                <div id="attractionList"></div>
+            </div>
+        </div>
+
+        <div class="footer-info">
+            <h3>📍 Explore Salem's Diverse Attractions</h3>
+            <p>From world-class shopping malls to serene nature parks, scenic hilltops, and thrilling attractions, Salem has something for everyone. Use the map to locate your favorite places.</p>
+        </div>
+    </div>
+
+    <script>
+        const shoppingPlaces = [
+            { name: "Reliance Mall", specialty: "Large mall with retail stores, food & entertainment", type: "shopping", lat: 11.6610, lng: 78.1650 },
+            { name: "Kandaswarna Mega Mall", specialty: "Mega mall with diverse retail options", type: "shopping", lat: 11.6620, lng: 78.1710 },
+            { name: "City Centre Mall", specialty: "Shopping & eateries in Fairlands", type: "shopping", lat: 11.6630, lng: 78.1720 },
+            { name: "Nirmal Skywin Mall", specialty: "Shopping on Rajaji Road", type: "shopping", lat: 11.6590, lng: 78.1570 },
+            { name: "RBT Mall", specialty: "Retail stores and food outlets", type: "shopping", lat: 11.6600, lng: 78.1595 },
+            { name: "Sri Santham Shopping Complex", specialty: "Local shopping hub", type: "shopping", lat: 11.6580, lng: 78.1580 },
+            { name: "Elegant Mall", specialty: "Small stylish mall", type: "shopping", lat: 11.6570, lng: 78.1565 },
+            { name: "Swarnambigai Plaza", specialty: "Omalur Main Road plaza", type: "shopping", lat: 11.6550, lng: 78.1540 },
+            { name: "Empire Arcade", specialty: "Arcade shopping & leisure", type: "shopping", lat: 11.6640, lng: 78.1740 },
+            { name: "POTHYS Salem", specialty: "Large textile & fashion store", type: "shopping", lat: 11.6650, lng: 78.1660 }
+        ];
+
+        const naturePlaces = [
+            { name: "Snow City", specialty: "Theme attraction inside Anna Park with snow experience", type: "nature", lat: 11.6700, lng: 78.1800 },
+            { name: "Check Dam Thirumanimuthar River", specialty: "Scenic river spot with beautiful views", type: "nature", lat: 11.6750, lng: 78.1900 },
+            { name: "Mookaneri", specialty: "Lake area—great for strolls & photos", type: "nature", lat: 11.7100, lng: 78.2200 },
+            { name: "Ammapet Kumaragiri Lake", specialty: "Lakeside area for leisure and relaxation", type: "nature", lat: 11.6450, lng: 78.1450 },
+            { name: "Jerugumalai Viewpoint", specialty: "Scenic lookout with hilltop views", type: "nature", lat: 11.6800, lng: 78.2000 },
+            { name: "Reddiyur Lake", specialty: "Quiet lake in city area for peaceful visits", type: "nature", lat: 11.6850, lng: 78.2050 },
+            { name: "Ramakrishna Park", specialty: "Well-liked park for relaxation & family time", type: "nature", lat: 11.6650, lng: 78.1750 },
+            { name: "Government Museum", specialty: "Museum with archaeological displays", type: "nature", lat: 11.6600, lng: 78.1600 }
+        ];
+
+        const attractionPlaces = [
+            { name: "Yercaud Hills", specialty: "Popular hill station with viewpoints, gardens and boating", type: "attraction", lat: 11.7500, lng: 78.3200 },
+            { name: "Yercaud Lake & Boat House", specialty: "Scenic lake with boating activities", type: "attraction", lat: 11.7550, lng: 78.3250 },
+            { name: "Peeku Park, Yercaud", specialty: "Family park near the lake with rides", type: "attraction", lat: 11.7520, lng: 78.3220 },
+            { name: "Kiliyur Falls", specialty: "Beautiful waterfall in Yercaud hills", type: "attraction", lat: 11.7600, lng: 78.3300 },
+            { name: "Pagoda Point, Yercaud", specialty: "Clifftop view point with scenic vistas", type: "attraction", lat: 11.7450, lng: 78.3150 },
+            { name: "Oothumalai Hill", specialty: "Hill with clusters of temples and city views", type: "attraction", lat: 11.7000, lng: 78.2500 },
+            { name: "Paravasa Ulagam", specialty: "Water theme park with rides, pools and activities", type: "attraction", lat: 11.6950, lng: 78.2400 },
+            { name: "Kurumbapatti Zoological Park", specialty: "Zoo with animal & bird species, kids' area", type: "attraction", lat: 11.6300, lng: 78.1200 }
+        ];
+
+        let map, markers = [], currentFilter = 'all';
+        const typeColors = { shopping: '#ff6b9d', nature: '#4ecdc4', attraction: '#ffa502' };
+
+        function initMap() {
+            map = L.map('placesMapView').setView([11.6575, 78.1605], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
+            addMarkers();
+        }
+
+        function addMarkers() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            let filtered = currentFilter === 'all' ? [...shoppingPlaces, ...naturePlaces, ...attractionPlaces] :
+                          currentFilter === 'shopping' ? shoppingPlaces : currentFilter === 'nature' ? naturePlaces : attractionPlaces;
+            filtered.forEach(place => {
+                const marker = L.circleMarker([place.lat, place.lng], { radius: 10, fillColor: typeColors[place.type], color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.8 }).addTo(map);
+                marker.bindPopup(`<strong>${place.name}</strong><br>${place.specialty}`);
+                markers.push(marker);
+            });
+        }
+
+        function renderShoppingGrid() {
+            document.getElementById('shoppingGrid').innerHTML = shoppingPlaces.map(p => `<div class="place-card shopping" onclick="focusPlace(${p.lat}, ${p.lng})"><div class="place-icon">🛍️</div><div class="place-category shopping">SHOPPING</div><div class="place-name">${p.name}</div><div class="place-description">${p.specialty}</div><div class="place-specialty"><div class="specialty-label">✨ What to Expect:</div><div class="specialty-value">Clothing, electronics, fashion, jewellery & local goods</div></div><button class="view-btn" onclick="focusPlace(${p.lat}, ${p.lng}); event.stopPropagation();">View on Map ↓</button></div>`).join('');
+        }
+
+        function renderNatureGrid() {
+            document.getElementById('natureGrid').innerHTML = naturePlaces.map(p => `<div class="place-card nature" onclick="focusPlace(${p.lat}, ${p.lng})"><div class="place-icon">🌳</div><div class="place-category nature">NATURE & PARKS</div><div class="place-name">${p.name}</div><div class="place-description">${p.specialty}</div><div class="place-specialty"><div class="specialty-label">💚 Perfect For:</div><div class="specialty-value">Relaxation, strolls, photography & family time</div></div><button class="view-btn" onclick="focusPlace(${p.lat}, ${p.lng}); event.stopPropagation();">View on Map ↓</button></div>`).join('');
+        }
+
+        function renderAttractionGrid() {
+            document.getElementById('attractionGrid').innerHTML = attractionPlaces.map(p => `<div class="place-card attraction" onclick="focusPlace(${p.lat}, ${p.lng})"><div class="place-icon">🎢</div><div class="place-category attraction">ATTRACTION</div><div class="place-name">${p.name}</div><div class="place-description">${p.specialty}</div><div class="place-specialty"><div class="specialty-label">🎯 Best For:</div><div class="specialty-value">Adventure, scenic views & family entertainment</div></div><button class="view-btn" onclick="focusPlace(${p.lat}, ${p.lng}); event.stopPropagation();">View on Map ↓</button></div>`).join('');
+        }
+
+        function renderShoppingList() {
+            document.getElementById('shoppingList').innerHTML = shoppingPlaces.map(p => `<div class="place-item shopping"><h3>${p.name}</h3><div class="place-details"><div class="detail-box"><div class="detail-label">📝 Description</div><div class="detail-value">${p.specialty}</div></div></div><div class="detail-box" style="background: white;"><div class="detail-label">✨ Speciality</div><div class="detail-value">Clothing, electronics, fashion, jewellery & local goods</div></div><button class="view-btn" style="margin-top: 1rem; background: #ff6b9d;" onclick="focusPlace(${p.lat}, ${p.lng})">View on Map ↓</button></div>`).join('');
+        }
+
+        function renderNatureList() {
+            document.getElementById('natureList').innerHTML = naturePlaces.map(p => `<div class="place-item nature"><h3>${p.name}</h3><div class="place-details"><div class="detail-box"><div class="detail-label">📝 Description</div><div class="detail-value">${p.specialty}</div></div></div><div class="detail-box" style="background: white;"><div class="detail-label">💚 Perfect For</div><div class="detail-value">Relaxation, strolls, photography & family time</div></div><button class="view-btn" style="margin-top: 1rem; background: #4ecdc4;" onclick="focusPlace(${p.lat}, ${p.lng})">View on Map ↓</button></div>`).join('');
+        }
+
+        function renderAttractionList() {
+            document.getElementById('attractionList').innerHTML = attractionPlaces.map(p => `<div class="place-item attraction"><h3>${p.name}</h3><div class="place-details"><div class="detail-box"><div class="detail-label">📝 Description</div><div class="detail-value">${p.specialty}</div></div></div><div class="detail-box" style="background: white;"><div class="detail-label">🎯 Best For</div><div class="detail-value">Adventure, scenic views & family entertainment</div></div><button class="view-btn" style="margin-top: 1rem; background: #ffa502;" onclick="focusPlace(${p.lat}, ${p.lng})">View on Map ↓</button></div>`).join('');
+        }
+
+        function filterPlaces(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            addMarkers();
+            const show = (t) => document.getElementById(`${t}-section`).style.display = currentFilter === 'all' || currentFilter === t ? 'block' : 'none';
+            show('shopping'); show('nature'); show('attraction');
+            document.getElementById('shopping-section-list').style.display = currentFilter === 'all' || currentFilter === 'shopping' ? 'block' : 'none';
+            document.getElementById('nature-section-list').style.display = currentFilter === 'all' || currentFilter === 'nature' ? 'block' : 'none';
+            document.getElementById('attraction-section-list').style.display = currentFilter === 'all' || currentFilter === 'attraction' ? 'block' : 'none';
+        }
+
+        function switchView(v) {
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('gridView').style.display = v === 'grid' ? 'block' : 'none';
+            document.getElementById('listView').style.display = v === 'list' ? 'block' : 'none';
+        }
+
+        function focusPlace(lat, lng) {
+            map.setView([lat, lng], 15);
+            document.querySelector('.map-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap(); renderShoppingGrid(); renderNatureGrid(); renderAttractionGrid();
+            renderShoppingList(); renderNatureList(); renderAttractionList();
+        });
+    </script>
+</body>
+</html>

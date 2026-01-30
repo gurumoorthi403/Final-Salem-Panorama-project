@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Hotels in Salem - Complete Guide</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .site-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .site-tagline {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 20px;
+        }
+
+        .intro-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .intro-section h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .intro-section p {
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        /* Map Section */
+        .map-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .map-section h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        #hotelMapView {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2c3e50;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Filters */
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.7rem 1.2rem;
+            border: 2px solid #2c3e50;
+            background: white;
+            color: #2c3e50;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+        }
+
+        /* Hotels Grid */
+        .hotels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .hotel-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-top: 5px solid #2c3e50;
+            cursor: pointer;
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .hotel-rating {
+            display: inline-block;
+            background: #f39c12;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .hotel-name {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .hotel-category {
+            color: #e74c3c;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .hotel-location {
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hotel-description {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .hotel-amenities {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 3px solid #2c3e50;
+        }
+
+        .amenities-label {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .amenities-list {
+            color: #555;
+            font-size: 0.9rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .amenity-tag {
+            background: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            border: 1px solid #ddd;
+        }
+
+        .view-btn {
+            display: inline-block;
+            background: #2c3e50;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+        }
+
+        .view-btn:hover {
+            background: #34495e;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .toggle-btn {
+            padding: 0.7rem 1.5rem;
+            border: 2px solid #2c3e50;
+            background: white;
+            color: #2c3e50;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: #2c3e50;
+            color: white;
+        }
+
+        /* List View */
+        .hotels-list {
+            display: none;
+        }
+
+        .hotel-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid #2c3e50;
+        }
+
+        .hotel-item h3 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .hotel-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-box {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #2c3e50;
+        }
+
+        .detail-label {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 1rem;
+        }
+
+        /* Footer */
+        .footer-info {
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.1) 0%, rgba(52, 73, 94, 0.1) 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .footer-info h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: #2c3e50;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn:hover {
+            background: #34495e;
+        }
+
+        @media (max-width: 768px) {
+            .hotels-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .site-title {
+                font-size: 1.5rem;
+            }
+
+            .map-container {
+                height: 350px;
+            }
+
+            .hotel-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1 class="site-title">🏨 Top Hotels in Salem</h1>
+            <p class="site-tagline">Premium & Comfortable Accommodation Options - Complete Guide with Locations</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <a href="index.html" class="back-btn">← Back to Home</a>
+
+        <!-- Intro Section -->
+        <div class="intro-section">
+            <h1>Find Your Perfect Stay in Salem</h1>
+            <p>Salem offers a range of accommodation options from premium 4-star hotels to comfortable budget-friendly choices. Explore our comprehensive guide to the best hotels in Salem, each with unique amenities and convenient locations. Click on any hotel to view its exact location on the map.</p>
+        </div>
+
+        <!-- Map Section -->
+        <div class="map-section">
+            <h2>🗺️ Hotels Map of Salem</h2>
+            <div class="map-container">
+                <div id="hotelMapView"></div>
+            </div>
+            <div class="map-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #e74c3c;"></div>
+                    <span>Premium Hotels (4-Star)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #3498db;"></div>
+                    <span>Mid-Range Hotels</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #f39c12;"></div>
+                    <span>Budget Hotels</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterHotels('all')">📍 Show All</button>
+            <button class="filter-btn" onclick="filterHotels('premium')">⭐ Premium Hotels</button>
+            <button class="filter-btn" onclick="filterHotels('midrange')">🏩 Mid-Range Hotels</button>
+            <button class="filter-btn" onclick="filterHotels('budget')">💰 Budget Hotels</button>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button class="toggle-btn active" onclick="switchView('grid')">📑 Grid View</button>
+            <button class="toggle-btn" onclick="switchView('list')">📋 List View</button>
+        </div>
+
+        <!-- Grid View -->
+        <div class="hotels-grid" id="gridView"></div>
+
+        <!-- List View -->
+        <div class="hotels-list" id="listView"></div>
+
+        <!-- Footer Info -->
+        <div class="footer-info">
+            <h3>📍 How to Use This Guide</h3>
+            <p>Click on any hotel in the grid or list to see its exact location on the map above. Use the filter buttons to view specific categories of hotels. Each hotel card includes location details and amenities for easy selection.</p>
+        </div>
+    </div>
+
+    <script>
+        const hotels = [
+            {
+                id: 1,
+                name: "Radisson Hotel Salem",
+                category: "Premium",
+                type: "premium",
+                location: "Bangalore Highway",
+                rating: "4-Star",
+                description: "A 4-star hotel with excellent amenities and services. One of the finest hotels in Salem offering luxury accommodation and top-notch facilities.",
+                amenities: ["Pool", "Spa", "Restaurant", "Conference Halls", "Fitness Center", "Room Service"],
+                lat: 11.6650,
+                lng: 78.1700
+            },
+            {
+                id: 2,
+                name: "Hotel Cenneys Gateway",
+                category: "Premium",
+                type: "premium",
+                location: "City Center",
+                rating: "4-Star",
+                description: "Premium 4-star hotel well-reviewed for its upscale amenities and excellent service in the heart of Salem city.",
+                amenities: ["Restaurant", "Bar", "Parking", "AC Rooms", "Business Center", "Room Service"],
+                lat: 11.6580,
+                lng: 78.1595
+            },
+            {
+                id: 3,
+                name: "Zibe Salem by GRT Hotels",
+                category: "Mid-Range",
+                type: "midrange",
+                location: "City Center",
+                rating: "4-Star",
+                description: "Popular mid-range hotel with excellent ratings, great service, and comfortable accommodation at reasonable prices.",
+                amenities: ["Restaurant", "Parking", "AC Rooms", "TV", "Hot Water", "Room Service"],
+                lat: 11.6570,
+                lng: 78.1610
+            },
+            {
+                id: 4,
+                name: "Sivaraj Inn",
+                category: "Mid-Range",
+                type: "midrange",
+                location: "Near Bus Stand & Railway Station",
+                rating: "3-Star",
+                description: "Comfortable hotel with convenient location close to both bus stand and railway station for easy accessibility.",
+                amenities: ["Restaurant", "Parking", "AC Rooms", "TV", "Room Service"],
+                lat: 11.6560,
+                lng: 78.1585
+            },
+            {
+                id: 5,
+                name: "GRAND ESTANCIA",
+                category: "Premium",
+                type: "premium",
+                location: "Central Salem",
+                rating: "4-Star",
+                description: "Stylish hotel with modern amenities and excellent facilities for a luxurious stay in Salem.",
+                amenities: ["Pool", "Spa", "Restaurant", "Bar", "Parking", "Room Service"],
+                lat: 11.6600,
+                lng: 78.1620
+            },
+            {
+                id: 6,
+                name: "CJ Pallazzio",
+                category: "Mid-Range",
+                type: "midrange",
+                location: "City Center",
+                rating: "3-Star",
+                description: "Well-liked hotel known for good food, friendly service, and comfortable rooms at budget-friendly rates.",
+                amenities: ["Restaurant", "Parking", "AC Rooms", "TV", "Room Service"],
+                lat: 11.6575,
+                lng: 78.1600
+            },
+            {
+                id: 7,
+                name: "Hotel Pearls",
+                category: "Budget",
+                type: "budget",
+                location: "New Bus Stand Road",
+                rating: "2-Star",
+                description: "Affordable hotel offering basic yet comfortable accommodation near the new bus stand area.",
+                amenities: ["Parking", "AC Rooms", "TV", "Room Service"],
+                lat: 11.6550,
+                lng: 78.1680
+            },
+            {
+                id: 8,
+                name: "Hotel Rathna Residency",
+                category: "Mid-Range",
+                type: "midrange",
+                location: "Salem",
+                rating: "3-Star",
+                description: "Comfortable mid-range stay offering good value for money with decent amenities and services.",
+                amenities: ["Restaurant", "Parking", "AC Rooms", "TV", "Room Service"],
+                lat: 11.6565,
+                lng: 78.1605
+            },
+            {
+                id: 9,
+                name: "J V Residency",
+                category: "Budget",
+                type: "budget",
+                location: "Narasothipatti",
+                rating: "2-Star",
+                description: "Budget-friendly hotel perfect for travelers looking for affordable accommodation without compromising on comfort.",
+                amenities: ["Parking", "AC Rooms", "TV", "Room Service"],
+                lat: 11.6450,
+                lng: 78.1750
+            },
+            {
+                id: 10,
+                name: "Raj Residency Salem",
+                category: "Mid-Range",
+                type: "midrange",
+                location: "Salem",
+                rating: "3-Star",
+                description: "Serviced apartment style stay offering the comfort of home with hotel amenities and flexibility.",
+                amenities: ["Kitchenette", "Parking", "AC Rooms", "TV", "Washing Machine"],
+                lat: 11.6580,
+                lng: 78.1615
+            },
+            {
+                id: 11,
+                name: "Sri K Residency",
+                category: "Budget",
+                type: "budget",
+                location: "Salem",
+                rating: "2-Star",
+                description: "Simple and value-for-money hotel offering basic amenities for budget-conscious travelers.",
+                amenities: ["Parking", "AC Rooms", "TV", "Room Service"],
+                lat: 11.6570,
+                lng: 78.1590
+            },
+            {
+                id: 12,
+                name: "Windsor Castle Hotel",
+                category: "Mid-Range",
+                type: "midrange",
+                location: "Salem",
+                rating: "3-Star",
+                description: "Good quality hotel offering comfortable rooms with excellent facilities including pool and restaurant.",
+                amenities: ["Pool", "Restaurant", "Parking", "AC Rooms", "TV", "Room Service"],
+                lat: 11.6600,
+                lng: 78.1630
+            },
+            {
+                id: 13,
+                name: "Hotel Salem Castle",
+                category: "Mid-Range",
+                type: "midrange",
+                location: "Swarnapuri",
+                rating: "3-Star",
+                description: "Mid-range hotel in Swarnapuri area offering comfortable stay with good amenities and service.",
+                amenities: ["Restaurant", "Parking", "AC Rooms", "TV", "Room Service"],
+                lat: 11.6480,
+                lng: 78.1550
+            },
+            {
+                id: 14,
+                name: "Selvamathi Farm Resorts",
+                category: "Mid-Range",
+                type: "midrange",
+                location: "Outside Central Salem",
+                rating: "3-Star",
+                description: "Resort-style stay just outside central Salem offering a peaceful rural experience with modern amenities.",
+                amenities: ["Farm Setting", "Restaurant", "Parking", "AC Rooms", "Garden"],
+                lat: 11.7000,
+                lng: 78.2200
+            }
+        ];
+
+        let map;
+        let markers = [];
+        let currentFilter = 'all';
+
+        const typeColors = {
+            premium: '#e74c3c',
+            midrange: '#3498db',
+            budget: '#f39c12'
+        };
+
+        function initMap() {
+            map = L.map('hotelMapView').setView([11.6575, 78.1605], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            addMarkers();
+        }
+
+        function addMarkers() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            const filtered = currentFilter === 'all' 
+                ? hotels 
+                : hotels.filter(h => h.type === currentFilter);
+
+            filtered.forEach(hotel => {
+                const marker = L.circleMarker([hotel.lat, hotel.lng], {
+                    radius: 10,
+                    fillColor: typeColors[hotel.type],
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                marker.bindPopup(`<strong>${hotel.name}</strong><br>${hotel.location}`);
+                markers.push(marker);
+            });
+        }
+
+        function filterHotels(type) {
+            currentFilter = type;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            addMarkers();
+            renderGrid();
+            renderList();
+        }
+
+        function renderGrid() {
+            const gridView = document.getElementById('gridView');
+            gridView.innerHTML = '';
+
+            const filtered = currentFilter === 'all' 
+                ? hotels 
+                : hotels.filter(h => h.type === currentFilter);
+
+            filtered.forEach(hotel => {
+                const card = `
+                    <div class="hotel-card" style="border-top-color: ${typeColors[hotel.type]};" onclick="focusHotel(${hotel.lat}, ${hotel.lng})">
+                        <div class="hotel-rating">⭐ ${hotel.rating}</div>
+                        <div class="hotel-name">${hotel.name}</div>
+                        <div class="hotel-category">${hotel.category}</div>
+                        <div class="hotel-location">📍 ${hotel.location}</div>
+                        <div class="hotel-description">${hotel.description}</div>
+                        <div class="hotel-amenities">
+                            <div class="amenities-label">Amenities:</div>
+                            <div class="amenities-list">
+                                ${hotel.amenities.map(a => `<span class="amenity-tag">${a}</span>`).join('')}
+                            </div>
+                        </div>
+                        <button class="view-btn" onclick="focusHotel(${hotel.lat}, ${hotel.lng}); event.stopPropagation();">View on Map ↓</button>
+                    </div>
+                `;
+                gridView.innerHTML += card;
+            });
+        }
+
+        function renderList() {
+            const listView = document.getElementById('listView');
+            listView.innerHTML = '';
+
+            const filtered = currentFilter === 'all' 
+                ? hotels 
+                : hotels.filter(h => h.type === currentFilter);
+
+            filtered.forEach(hotel => {
+                const item = `
+                    <div class="hotel-item" style="border-left-color: ${typeColors[hotel.type]};">
+                        <h3>⭐ ${hotel.name}</h3>
+                        <div class="hotel-details">
+                            <div class="detail-box">
+                                <div class="detail-label">📍 Location</div>
+                                <div class="detail-value">${hotel.location}</div>
+                            </div>
+                            <div class="detail-box">
+                                <div class="detail-label">⭐ Rating</div>
+                                <div class="detail-value">${hotel.rating}</div>
+                            </div>
+                            <div class="detail-box">
+                                <div class="detail-label">🏷️ Category</div>
+                                <div class="detail-value">${hotel.category}</div>
+                            </div>
+                        </div>
+                        <div class="detail-box" style="background: white; border-left: 3px solid ${typeColors[hotel.type]};">
+                            <div class="detail-label">📝 Description</div>
+                            <div class="detail-value">${hotel.description}</div>
+                        </div>
+                        <div class="detail-box" style="background: white; border-left: 3px solid ${typeColors[hotel.type]};">
+                            <div class="detail-label">✨ Amenities</div>
+                            <div class="detail-value">${hotel.amenities.join(', ')}</div>
+                        </div>
+                        <button class="view-btn" style="margin-top: 1rem; background: ${typeColors[hotel.type]};" onclick="focusHotel(${hotel.lat}, ${hotel.lng})">View on Map ↓</button>
+                    </div>
+                `;
+                listView.innerHTML += item;
+            });
+        }
+
+        function switchView(view) {
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+
+            if (view === 'grid') {
+                gridView.style.display = 'grid';
+                listView.style.display = 'none';
+            } else {
+                gridView.style.display = 'none';
+                listView.style.display = 'block';
+            }
+        }
+
+        function focusHotel(lat, lng) {
+            map.setView([lat, lng], 14);
+            document.querySelector('.map-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            renderGrid();
+            renderList();
+        });
+    </script>
+</body>
+</html>

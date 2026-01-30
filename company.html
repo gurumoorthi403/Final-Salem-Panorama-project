@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top IT & Software Companies in Salem</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .site-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .site-tagline {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 20px;
+        }
+
+        .intro-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .intro-section h1 {
+            color: #1e3c72;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .intro-section p {
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        /* Map Section */
+        .map-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .map-section h2 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        #companyMapView {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #1e3c72;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.7rem 1.2rem;
+            border: 2px solid #1e3c72;
+            background: white;
+            color: #1e3c72;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        }
+
+        /* Companies Grid */
+        .companies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .company-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-top: 5px solid #1e3c72;
+            border-left: 3px solid #2a5298;
+            cursor: pointer;
+        }
+
+        .company-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .company-card.featured {
+            border-top: 5px solid #f39c12;
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.05) 0%, rgba(243, 156, 18, 0.02) 100%);
+        }
+
+        .company-card.manufacturing {
+            border-top: 5px solid #e74c3c;
+        }
+
+        .company-badge {
+            display: inline-block;
+            background: #f39c12;
+            color: white;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .company-badge.manufacturing {
+            background: #e74c3c;
+        }
+
+        .company-name {
+            color: #1e3c72;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .company-category {
+            color: #2a5298;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .company-address {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-left: 3px solid #2a5298;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .address-label {
+            color: #1e3c72;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .address-value {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .company-phone {
+            background: #e8f0ff;
+            padding: 1rem;
+            border-left: 3px solid #2a5298;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .phone-label {
+            color: #1e3c72;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .phone-value {
+            color: #2a5298;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .company-services {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .view-btn {
+            display: inline-block;
+            background: #1e3c72;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+        }
+
+        .view-btn:hover {
+            background: #2a5298;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .toggle-btn {
+            padding: 0.7rem 1.5rem;
+            border: 2px solid #1e3c72;
+            background: white;
+            color: #1e3c72;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        /* List View */
+        .companies-list {
+            display: none;
+        }
+
+        .company-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid #1e3c72;
+        }
+
+        .company-item.manufacturing {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .company-item h3 {
+            color: #1e3c72;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .company-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-box {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #2a5298;
+        }
+
+        .detail-label {
+            color: #1e3c72;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Categories Section */
+        .category-section {
+            margin-bottom: 3rem;
+        }
+
+        .category-title {
+            color: #1e3c72;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 3px solid #2a5298;
+        }
+
+        .category-title.manufacturing {
+            border-bottom-color: #e74c3c;
+        }
+
+        /* Footer */
+        .footer-info {
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.1) 0%, rgba(42, 82, 152, 0.1) 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .footer-info h3 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: #1e3c72;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn:hover {
+            background: #2a5298;
+        }
+
+        @media (max-width: 768px) {
+            .companies-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .site-title {
+                font-size: 1.5rem;
+            }
+
+            .map-container {
+                height: 350px;
+            }
+
+            .company-details {
+                grid-template-columns: 1fr;
+            }
+
+            .category-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1 class="site-title">💻 IT & Software Companies in Salem</h1>
+            <p class="site-tagline">Leading Technology & Manufacturing Firms - Complete Directory with Locations</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <a href="index.html" class="back-btn">← Back to Home</a>
+
+        <!-- Intro Section -->
+        <div class="intro-section">
+            <h1>Salem's Business & Technology Hub</h1>
+            <p>Salem is a growing center for IT services, software development, and manufacturing industries. Discover the leading companies in these sectors with complete contact information and locations. From software solutions to precision engineering, Salem hosts diverse industry leaders.</p>
+        </div>
+
+        <!-- Map Section -->
+        <div class="map-section">
+            <h2>🗺️ Companies Map of Salem</h2>
+            <div class="map-container">
+                <div id="companyMapView"></div>
+            </div>
+            <div class="map-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #f39c12;"></div>
+                    <span>IT & Software Companies</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #e74c3c;"></div>
+                    <span>Manufacturing & Industrial</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterCompanies('all')">📍 Show All</button>
+            <button class="filter-btn" onclick="filterCompanies('it')">💻 IT & Software</button>
+            <button class="filter-btn" onclick="filterCompanies('manufacturing')">🏭 Manufacturing</button>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button class="toggle-btn active" onclick="switchView('grid')">📑 Grid View</button>
+            <button class="toggle-btn" onclick="switchView('list')">📋 List View</button>
+        </div>
+
+        <!-- Grid View -->
+        <div id="gridView">
+            <!-- IT Companies Section -->
+            <div class="category-section" id="it-section">
+                <h2 class="category-title">💻 IT & Software Companies</h2>
+                <div class="companies-grid" id="itGrid"></div>
+            </div>
+
+            <!-- Manufacturing Companies Section -->
+            <div class="category-section" id="manufacturing-section">
+                <h2 class="category-title manufacturing">🏭 Manufacturing & Industrial Companies</h2>
+                <div class="companies-grid" id="manufacturingGrid"></div>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div id="listView" class="companies-list">
+            <!-- IT Companies Section -->
+            <div class="category-section" id="it-section-list">
+                <h2 class="category-title">💻 IT & Software Companies</h2>
+                <div id="itList"></div>
+            </div>
+
+            <!-- Manufacturing Companies Section -->
+            <div class="category-section" id="manufacturing-section-list">
+                <h2 class="category-title manufacturing">🏭 Manufacturing & Industrial Companies</h2>
+                <div id="manufacturingList"></div>
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="footer-info">
+            <h3>📍 About Salem's Business Community</h3>
+            <p>Salem is home to numerous IT and software companies offering cutting-edge solutions, as well as established manufacturing and industrial firms. Use the map to locate these companies and click the "View on Map" button to see their exact locations.</p>
+        </div>
+    </div>
+
+    <script>
+        const itCompanies = [
+            {
+                id: 1,
+                name: "CodeBind Technologies",
+                address: "First Floor, KAK Complex, 703, Gugai, Salem, Tamil Nadu 636006, India",
+                phone: "+91 93631 99363",
+                category: "Software development & IT services",
+                type: "it",
+                lat: 11.6580,
+                lng: 78.1600
+            },
+            {
+                id: 2,
+                name: "Ideal Formatic Software Technology - IFST",
+                address: "No. 52/41, T.V.K Street, Vasantha Nagar Rd, Thiruvakavundanur, Salem, Tamil Nadu 636005, India",
+                phone: "+91 75989 49248",
+                category: "Software & marketing services",
+                type: "it",
+                lat: 11.6550,
+                lng: 78.1550
+            },
+            {
+                id: 3,
+                name: "Binary Clouds Software Technologies",
+                address: "Park Street, RMR, Fairlands, Salem, Tamil Nadu 636016, India",
+                phone: "+91 99658 65904",
+                category: "Web design & software solutions",
+                type: "it",
+                lat: 11.6620,
+                lng: 78.1700
+            },
+            {
+                id: 4,
+                name: "Optimus Technocrates India Private Limited",
+                address: "Third Floor, TNR Complex, Near ATC Bus Depot, New Bus Stand, Salem, Tamil Nadu 636009, India",
+                phone: "+91 94433 92673",
+                category: "Software & training services",
+                type: "it",
+                lat: 11.6560,
+                lng: 78.1590
+            },
+            {
+                id: 5,
+                name: "StinSoft Technologies Private Limited",
+                address: "IT Park G6 Elcot SEZ, Jaggir Ammapalayam, Salem, Tamil Nadu 636012, India",
+                phone: "+91 81100 30055",
+                category: "Software & IT support",
+                type: "it",
+                lat: 11.6800,
+                lng: 78.2100
+            }
+        ];
+
+        const manufacturingCompanies = [
+            {
+                id: 6,
+                name: "Talema Electronic (India) Pvt. Ltd",
+                address: "Plot Nos 30 & 31, Electrical & Electronic Industrial Estate, Suramangalam, Salem, Tamil Nadu 636005, India",
+                phone: "+91 427 2433 100",
+                category: "Electronics manufacturer (Toroidal transformers, components)",
+                type: "manufacturing",
+                lat: 11.6450,
+                lng: 78.1450
+            },
+            {
+                id: 7,
+                name: "MSB ELECTRONIC INDUSTRIES",
+                address: "51/12 Chennakrishnapuram, Salem, Tamil Nadu 636007, India",
+                phone: "+91 98427 55449",
+                category: "Electronics parts manufacturer & supplier",
+                type: "manufacturing",
+                lat: 11.6700,
+                lng: 78.1800
+            },
+            {
+                id: 8,
+                name: "Pilotsmith Salem",
+                address: "KM Complex, 43/58-A, Suramangalam Main Rd, 3 Roads, Pallapatti, Salem, Tamil Nadu 636009, India",
+                phone: "+91 93810 78554",
+                category: "Precision engineering & manufacturing",
+                type: "manufacturing",
+                lat: 11.6400,
+                lng: 78.1350
+            },
+            {
+                id: 9,
+                name: "Trichy Steel Company",
+                address: "228-B, Suramangalam Main Rd, Suramangalam, Salem, Tamil Nadu 636009, India",
+                phone: "Contact for details",
+                category: "Steel manufacturing & metal fabrication",
+                type: "manufacturing",
+                lat: 11.6420,
+                lng: 78.1380
+            }
+        ];
+
+        let map;
+        let markers = [];
+        let currentFilter = 'all';
+
+        const typeColors = {
+            it: '#f39c12',
+            manufacturing: '#e74c3c'
+        };
+
+        function initMap() {
+            map = L.map('companyMapView').setView([11.6575, 78.1605], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            addMarkers();
+        }
+
+        function addMarkers() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            let filtered = [];
+            if (currentFilter === 'all') {
+                filtered = [...itCompanies, ...manufacturingCompanies];
+            } else if (currentFilter === 'it') {
+                filtered = itCompanies;
+            } else {
+                filtered = manufacturingCompanies;
+            }
+
+            filtered.forEach(company => {
+                const marker = L.circleMarker([company.lat, company.lng], {
+                    radius: 10,
+                    fillColor: typeColors[company.type],
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                marker.bindPopup(`<strong>${company.name}</strong><br>${company.category}`);
+                markers.push(marker);
+            });
+        }
+
+        function renderItGrid() {
+            const grid = document.getElementById('itGrid');
+            grid.innerHTML = '';
+
+            itCompanies.forEach(company => {
+                const card = `
+                    <div class="company-card featured" onclick="focusCompany(${company.lat}, ${company.lng})">
+                        <div class="company-badge">${company.id}</div>
+                        <div class="company-name">${company.name}</div>
+                        <div class="company-category">${company.category}</div>
+                        <div class="company-phone">
+                            <div class="phone-label">📞 Phone:</div>
+                            <div class="phone-value">${company.phone}</div>
+                        </div>
+                        <div class="company-address">
+                            <div class="address-label">📍 Address:</div>
+                            <div class="address-value">${company.address}</div>
+                        </div>
+                        <button class="view-btn" onclick="focusCompany(${company.lat}, ${company.lng}); event.stopPropagation();">View on Map ↓</button>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        function renderManufacturingGrid() {
+            const grid = document.getElementById('manufacturingGrid');
+            grid.innerHTML = '';
+
+            manufacturingCompanies.forEach(company => {
+                const card = `
+                    <div class="company-card manufacturing" onclick="focusCompany(${company.lat}, ${company.lng})">
+                        <div class="company-badge manufacturing">${company.id}</div>
+                        <div class="company-name">${company.name}</div>
+                        <div class="company-category">${company.category}</div>
+                        <div class="company-phone">
+                            <div class="phone-label">📞 Phone:</div>
+                            <div class="phone-value">${company.phone}</div>
+                        </div>
+                        <div class="company-address">
+                            <div class="address-label">📍 Address:</div>
+                            <div class="address-value">${company.address}</div>
+                        </div>
+                        <button class="view-btn" style="background: #e74c3c;" onclick="focusCompany(${company.lat}, ${company.lng}); event.stopPropagation();">View on Map ↓</button>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        function renderItList() {
+            const list = document.getElementById('itList');
+            list.innerHTML = '';
+
+            itCompanies.forEach(company => {
+                const item = `
+                    <div class="company-item">
+                        <h3>#${company.id} - ${company.name}</h3>
+                        <div class="company-details">
+                            <div class="detail-box">
+                                <div class="detail-label">🏷️ Category</div>
+                                <div class="detail-value">${company.category}</div>
+                            </div>
+                            <div class="detail-box">
+                                <div class="detail-label">📞 Phone</div>
+                                <div class="detail-value">${company.phone}</div>
+                            </div>
+                        </div>
+                        <div class="detail-box" style="background: white; border-left: 3px solid #2a5298; margin: 1rem 0;">
+                            <div class="detail-label">📍 Address</div>
+                            <div class="detail-value">${company.address}</div>
+                        </div>
+                        <button class="view-btn" style="margin-top: 1rem;" onclick="focusCompany(${company.lat}, ${company.lng})">View on Map ↓</button>
+                    </div>
+                `;
+                list.innerHTML += item;
+            });
+        }
+
+        function renderManufacturingList() {
+            const list = document.getElementById('manufacturingList');
+            list.innerHTML = '';
+
+            manufacturingCompanies.forEach(company => {
+                const item = `
+                    <div class="company-item manufacturing">
+                        <h3>#${company.id} - ${company.name}</h3>
+                        <div class="company-details">
+                            <div class="detail-box">
+                                <div class="detail-label">🏷️ Category</div>
+                                <div class="detail-value">${company.category}</div>
+                            </div>
+                            <div class="detail-box">
+                                <div class="detail-label">📞 Phone</div>
+                                <div class="detail-value">${company.phone}</div>
+                            </div>
+                        </div>
+                        <div class="detail-box" style="background: white; border-left: 3px solid #2a5298; margin: 1rem 0;">
+                            <div class="detail-label">📍 Address</div>
+                            <div class="detail-value">${company.address}</div>
+                        </div>
+                        <button class="view-btn" style="margin-top: 1rem; background: #e74c3c;" onclick="focusCompany(${company.lat}, ${company.lng})">View on Map ↓</button>
+                    </div>
+                `;
+                list.innerHTML += item;
+            });
+        }
+
+        function filterCompanies(type) {
+            currentFilter = type;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const itSection = document.getElementById('it-section');
+            const manufacturingSection = document.getElementById('manufacturing-section');
+            const itSectionList = document.getElementById('it-section-list');
+            const manufacturingSectionList = document.getElementById('manufacturing-section-list');
+
+            if (type === 'it') {
+                itSection.style.display = 'block';
+                manufacturingSection.style.display = 'none';
+                itSectionList.style.display = 'block';
+                manufacturingSectionList.style.display = 'none';
+            } else if (type === 'manufacturing') {
+                itSection.style.display = 'none';
+                manufacturingSection.style.display = 'block';
+                itSectionList.style.display = 'none';
+                manufacturingSectionList.style.display = 'block';
+            } else {
+                itSection.style.display = 'block';
+                manufacturingSection.style.display = 'block';
+                itSectionList.style.display = 'block';
+                manufacturingSectionList.style.display = 'block';
+            }
+
+            addMarkers();
+        }
+
+        function switchView(view) {
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+
+            if (view === 'grid') {
+                gridView.style.display = 'block';
+                listView.style.display = 'none';
+            } else {
+                gridView.style.display = 'none';
+                listView.style.display = 'block';
+            }
+        }
+
+        function focusCompany(lat, lng) {
+            map.setView([lat, lng], 15);
+            document.querySelector('.map-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            renderItGrid();
+            renderManufacturingGrid();
+            renderItList();
+            renderManufacturingList();
+        });
+    </script>
+</body>
+</html>
